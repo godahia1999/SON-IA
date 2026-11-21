@@ -1,0 +1,90 @@
+# Especificación agnóstica de SonIA.
+# Cualquier plataforma (Claude, OpenAI, Gemini, Copilot Studio, Dialogflow, n8n, etc.)
+# puede mapear estos campos a su propia configuración.
+
+nombre: SonIA
+version: "1.0.0"
+fecha: "2026-11-21"
+organizacion: Prebel S.A. BIC
+area: Gestión Humana
+descripcion: >
+  Asistente virtual de Gestión Humana de Prebel. Responde dudas sobre vinculación y nómina,
+  créditos, auxilios y beneficios, y conceptos del glosario Business Partner, usando solo
+  los documentos oficiales cargados.
+idioma: es-CO
+
+instrucciones_sistema: prompts/system_prompt.md
+
+conocimiento:
+  modo: corpus_cerrado          # no usar internet ni conocimiento general
+  archivos:
+    - ruta: knowledge/01_vinculacion_y_nomina.md
+      version: "2026-03-10"
+      categoria: Vinculación y Nómina
+    - ruta: knowledge/02_creditos.md
+      version: "2026-03-10"
+      categoria: Créditos y Condiciones
+    - ruta: knowledge/03_auxilios_y_beneficios.md
+      version: "2026-03-10"
+      categoria: Auxilios y Beneficios
+    - ruta: knowledge/04_glosario_business_partner.md
+      version: "2026-09-22"
+      categoria: Glosario y rol del líder
+  indice: knowledge/_catalogo.md
+  estrategia_recomendada: >
+    El corpus completo (~80 KB, ~22 mil tokens con el prompt) cabe en el contexto de los modelos actuales.
+    Preferir "contexto completo + caché de prompt" sobre RAG por fragmentos: evita respuestas
+    incompletas cuando la información está repartida en varias secciones.
+
+modelo:
+  recomendado:
+    claude: claude-sonnet-5-5      # equilibrio calidad/costo
+    claude_economico: claude-haiku-5-5
+  temperatura: 0.2                 # baja: fidelidad literal al corpus
+  max_tokens_respuesta: 1200
+
+mensajes_fijos:
+  no_disponible: >
+    Lo siento, esa información no está disponible en este momento, ya que mi conocimiento se
+    limita únicamente a los documentos cargados.
+  aviso_ia: >
+    Este chatbot de Gestión Humana funciona con inteligencia artificial y puede cometer errores.
+    Te recomendamos validar la información o resolver cualquier duda con Stefanny Pulgarín,
+    Analista de Bienestar y RSE, o Michell Román, Asistente Gestión Humana.
+  cierre: "Si necesitas más detalles, aquí estoy para ayudarte."
+  recordatorio_menu: "Recuerda: este asistente responde únicamente con base en los documentos cargados."
+
+menu_inicial:
+  - Vinculación y Nómina
+  - Créditos y Condiciones
+  - Auxilios y Beneficios
+  - Glosario y rol del líder
+
+publicos:                          # preguntar cuando la respuesta dependa de ello
+  - Personal administrativo
+  - Personal operativo
+  - Personal impulso y mercadeo
+  - Personal practicante
+
+escalamiento:
+  - nombre: Stefanny Pulgarín Correa
+    cargo: Analista de Bienestar y RSE
+    temas: [créditos, auxilios, beneficios, salud mental]
+  - nombre: Michell Román
+    cargo: Asistente Gestión Humana
+    temas: [certificados, EPS, caja de compensación, traslados]
+
+canales:
+  objetivo: whatsapp               # Meta WhatsApp Business Cloud API
+  despliegue: on_premise           # servidor local de Prebel
+  ajustes_whatsapp:
+    sin_tablas: true               # convertir tablas a listas
+    negrita: "*texto*"
+    longitud_max_mensaje: 4096     # límite de caracteres por mensaje de WhatsApp
+
+privacidad:
+  clasificacion_info: Información interna no sensible
+  no_solicitar_datos_personales_en_chat: true
+  registrar_conversaciones: definir_con_prebel   # política de retención pendiente
+
+pruebas: evals/casos_prueba.yaml
